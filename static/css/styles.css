@@ -1,0 +1,374 @@
+/* ==========================================================================
+   DHYEYA AI EDTECH - MODERN PURPLE DARK THEME SYSTEM (FIXED DASHBOARD)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --primary: #6c5ce7;
+    --primary-hover: #5b4bc4;
+    --primary-gradient: linear-gradient(135deg, #6c5ce7 0%, #8c7ae6 100%);
+    
+    --bg-dark: #090a10;
+    --card-bg: #121524;
+    --input-bg: #1a1e33;
+    
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(108, 92, 231, 0.5);
+    
+    --text-white: #ffffff;
+    --text-sub: #94a3b8;
+    
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-pill: 50px;
+    --transition: all 0.2s ease-in-out;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, body.dashboard-body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-sub);
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+/* Base Links & Buttons */
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: #a55eea;
+}
+
+button, .btn, .logout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    color: var(--text-white) !important;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none !important;
+    transition: var(--transition);
+}
+
+button:hover, .btn:hover, .logout-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   HEADER & NAVBAR STYLING
+   ========================================================================== */
+header, header.dashboard-navbar {
+    background: #111422 !important;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.2) !important;
+    padding: 16px 50px !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+header h1, .brand-title, .logo {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-white);
+    letter-spacing: -0.3px;
+}
+
+.logo span {
+    color: var(--primary);
+}
+
+.nav-right, .nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav-btn {
+    color: var(--text-sub);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.nav-btn:hover {
+    color: var(--text-white);
+}
+
+/* ==========================================================================
+   DASHBOARD WRAPPER & CARDS
+   ========================================================================== */
+.dashboard-wrapper, .container {
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Welcome Banner */
+.dash-welcome h2, .welcome-banner h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-white);
+    margin-bottom: 4px;
+}
+
+.dash-welcome p, .welcome-banner p {
+    color: var(--text-sub);
+    font-size: 14px;
+}
+
+.highlight-purple, .highlight {
+    color: #8c7ae6;
+}
+
+/* Card Section Containers */
+.dash-card, .card, .shadow-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+
+.dash-title, .card h2, .card h3 {
+    color: var(--text-white);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+/* ==========================================================================
+   STATS GRID (4 COLUMNS)
+   ========================================================================== */
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+}
+
+.stat-box, .stat-card {
+    background: var(--input-bg) !important;
+    border: 1px solid rgba(108, 92, 231, 0.2) !important;
+    border-radius: 14px !important;
+    padding: 16px 20px !important;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.stat-box:hover, .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary) !important;
+}
+
+.stat-box .icon, .stat-icon {
+    font-size: 24px;
+    background: rgba(108, 92, 231, 0.15);
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-label, .stat-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    display: block;
+    margin: 0;
+}
+
+.stat-num, .stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-white);
+    margin-top: 2px;
+}
+
+/* ==========================================================================
+   UPLOADS GRID (2 COLUMNS)
+   ========================================================================== */
+.uploads-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+}
+
+.upload-item, .upload-card {
+    background: var(--input-bg) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 14px !important;
+    padding: 16px !important;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.upload-item:hover, .upload-card:hover {
+    border-color: var(--border-hover) !important;
+}
+
+.doc-icon {
+    font-size: 22px;
+    background: rgba(108, 92, 231, 0.15);
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-info h5, .upload-title {
+    color: var(--text-white) !important;
+    font-size: 14px;
+    font-weight: 700 !important;
+    margin-bottom: 2px;
+}
+
+.upload-info .meta, .upload-meta {
+    color: #8c7ae6 !important;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.upload-info .time, .upload-date {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   QUICK LINKS (4 COLUMNS)
+   ========================================================================== */
+.quick-links-grid, .quick-links {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+}
+
+.quick-link-item, .quick-links a, .quick-link-btn {
+    background: var(--primary-gradient) !important;
+    color: var(--text-white) !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    font-weight: 700 !important;
+    font-size: 14px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    transition: transform 0.2s ease;
+    text-decoration: none !important;
+}
+
+.quick-link-item:hover, .quick-links a:hover, .quick-link-btn:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, #7d6df3 0%, #6c5ce7 100%) !important;
+}
+
+/* ==========================================================================
+   FORM INPUTS & CONTROLS
+   ========================================================================== */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="file"],
+textarea,
+select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-white);
+    font-size: 14px;
+    outline: none;
+    transition: var(--transition);
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--primary);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(108, 92, 231, 0.5);
+    border-radius: 10px;
+}
+
+/* Responsive Support */
+@media (max-width: 900px) {
+    .stats-grid, .quick-links-grid, .quick-links {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .uploads-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==========================================================================
+   TEXTAREA & NOTES FORMATTING & TEXT WRAPPING FIX
+   ========================================================================== */
+textarea {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    line-height: 1.6 !important;
+    resize: vertical;
+}
+
+#noteList p {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    line-height: 1.6 !important;
+}

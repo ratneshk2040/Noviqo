@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notes - Noviqo</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body class="dashboard-body">
+    <header class="dashboard-navbar">
+        <div class="logo">NOVIQO</div>
+        <div class="nav-buttons">
+            <a href="/dashboard" class="nav-btn">← Dashboard</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <main class="dashboard-wrapper">
+        <div class="dash-welcome">
+            <h2>My Notes</h2>
+            <p>Create and manage your study notes efficiently.</p>
+        </div>
+
+        <section class="dash-card">
+            <h3 class="dash-title">Create Note</h3>
+            <form id="noteForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <input type="number" name="question_id" placeholder="Question ID (optional)" />
+                    <input type="text" name="title" placeholder="Title (optional)" />
+                </div>
+                <textarea name="content" placeholder="Type your note here..." rows="4" required></textarea>
+                <button type="submit" class="btn" style="width: fit-content;">Save Note</button>
+            </form>
+        </section>
+
+        <section class="dash-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <h3 class="dash-title" style="margin-bottom: 0;">Saved Notes</h3>
+                <button type="button" onclick="downloadAllNotes()" class="btn" style="background: var(--input-bg); border: 1px solid var(--border);">Download All Notes</button>
+            </div>
+            <div id="noteList">
+                <p style="color: var(--text-sub);">Loading notes...</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script>
+        const token = localStorage.getItem('dhyeya_token') || localStorage.getItem('access_token');
+
+        if (!token) {
+            window.location.href = '/login';
+        }
+
+        // Smart Auto-Formatting Clipboard Formatter
+        const contentArea = document.querySelector('textarea[name="content"]');
+        if (contentArea) {
+            contentArea.addEventListener('paste', function(e) {
+                e.preventDefault();
+                let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                
+                pastedText = pastedText.replace(/(\r\n|\n|\r)/gm, " ");
+                pastedText = pastedText.replace(/([.?!])\s+(?=[A-Z0-9])/g, '$1\n\n');
+                pastedText = pastedText.replace(/(\s+\d+\.\s+)/g, '\n$1');
+
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                
+                this.value = this.value.substring(0, start) + pastedText + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + pastedText.length;
+            });
+        }
+
+        async function loadNotes() {
+            const noteList = document.getElementById('noteList');
+            try {
+                // FIXED: Changed endpoint to /api/notes
+                const response = await fetch('/api/notes', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error("Notes API Error Code:", response.status);
+                    noteList.innerHTML = `<p style="color: #f87171;">Failed to load notes (${response.status}).</p>`;
+                    return;
+                }
+
+                const notes = await response.json();
+
+                if (!Array.isArray(notes) || notes.length === 0) {
+                    noteList.innerHTML = '<p style="color: var(--text-sub);">No notes saved yet.</p>';
+                    return;
+                }
+
+                noteList.innerHTML = notes.map(note => `
+                    <div class="stat-box" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 14px;">
+                        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="color: var(--text-white); font-size: 16px;">${note.title || 'Untitled Note'}</h4>
+                            <button type="button" class="btn" style="padding: 4px 12px; font-size: 12px;" onclick="downloadNote(${note.id}, '${(note.title || 'note').replace(/'/g, "\\'")}')">
+                                Download
+                            </button>
+                        </div>
+                        <p style="color: var(--text-sub); font-size: 14px; white-space: pre-wrap; word-break: break-word;">${note.content || ''}</p>
+                        <small style="color: var(--text-sub); font-size: 11px;">
+                            ${note.question_id ? 'Question ID: ' + note.question_id + ' | ' : ''}
+                            ${note.created_at ? new Date(note.created_at).toLocaleString() : ''}
+                        </small>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("Error loading notes:", err);
+                noteList.innerHTML = `<p style="color: #f87171;">Network Error: Backend service not reachable.</p>`;
+            }
+        }
+
+        async function downloadNote(noteId, title) {
+            try {
+                // FIXED: Changed endpoint to /api/notes
+                const response = await fetch(`/api/notes/${noteId}/download`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    alert(data.detail || 'Failed to download note.');
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${title || 'note'}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error("Download error:", err);
+            }
+        }
+
+        async function downloadAllNotes() {
+            try {
+                // FIXED: Changed endpoint to /api/notes
+                const response = await fetch('/api/notes/download-all', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    alert(data.detail || 'Failed to download notes.');
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'all_notes.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error("Download all error:", err);
+            }
+        }
+
+        document.getElementById('noteForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            const body = {
+                question_id: formData.get('question_id') ? parseInt(formData.get('question_id')) : null,
+                title: formData.get('title') || "Untitled Note",
+                content: formData.get('content')
+            };
+
+            try {
+                // FIXED: Changed endpoint to /api/notes
+                const response = await fetch('/api/notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    alert(data.detail || 'Failed to save note.');
+                    return;
+                }
+
+                event.target.reset();
+                await loadNotes();
+            } catch (err) {
+                console.error("Save note error:", err);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadNotes);
+    </script>
+</body>
+</html>

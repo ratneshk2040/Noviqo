@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Practice History - Noviqo</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body class="dashboard-body">
+    <header class="dashboard-navbar">
+        <div class="logo">NOVIQO</div>
+        <div class="nav-buttons">
+            <a href="/dashboard" class="nav-btn">← Dashboard</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <main class="dashboard-wrapper">
+        <div class="dash-welcome">
+            <h2>Practice History</h2>
+            <p>Review your past quiz performances and track your learning progress.</p>
+        </div>
+
+        <section class="dash-card">
+            <h3 class="dash-title">Recent Practice Sessions</h3>
+            <div id="historyList">
+                <p style="color: var(--text-sub);">Loading history...</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/js/auth.js"></script>
+    <script>
+        // ---------------- AUTH CHECK ----------------
+        const token = localStorage.getItem("dhyeya_token");
+        console.log("Practice History Token:", token);
+
+        if (!token) {
+            console.log("No token found. Redirecting to login...");
+            window.location.href = "login.html";
+        }
+
+        // ---------------- LOAD PRACTICE HISTORY ----------------
+        async function loadHistory() {
+            const historyList = document.getElementById("historyList");
+
+            if (!historyList) {
+                console.error("historyList element not found");
+                return;
+            }
+
+            try {
+                console.log("Loading practice history...");
+
+                const response = await fetch("/api/practice/history", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                console.log("History response status:", response.status);
+
+                // ---------------- TOKEN INVALID ----------------
+                if (response.status === 401) {
+                    console.log("Token invalid or expired");
+                    localStorage.removeItem("dhyeya_token");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                // ---------------- OTHER ERRORS ----------------
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(
+                        errorData.detail || `Failed to load practice history (${response.status})`
+                    );
+                }
+
+                // ---------------- GET DATA ----------------
+                const sessions = await response.json();
+                console.log("Practice History Data:", sessions);
+
+                // ---------------- NO HISTORY ----------------
+                if (!Array.isArray(sessions) || sessions.length === 0) {
+                    historyList.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <p style="color: var(--text-sub); margin-bottom: 12px;">Complete a practice quiz to see your history here.</p>
+                            <a href="/dashboard" class="btn" style="display: inline-block;">Go to Dashboard</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // ---------------- DISPLAY HISTORY ----------------
+                historyList.innerHTML = sessions.map(session => `
+                    <div class="stat-box" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="color: var(--text-white); font-size: 16px; margin-bottom: 4px;">Score: ${session.score} / ${session.total_questions}</h4>
+                            <p style="font-size: 13px; color: var(--text-sub);">
+                                Correct: <span style="color: #10b981;">${session.correct_count}</span> | 
+                                Wrong: <span style="color: #f87171;">${session.wrong_count}</span>
+                            </p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 12px; color: var(--text-sub); display: block;">
+                                ${session.created_at ? new Date(session.created_at).toLocaleString() : "Date not available"}
+                            </span>
+                        </div>
+                    </div>
+                `).join("");
+
+            } catch (error) {
+                console.error("Practice History Error:", error);
+                historyList.innerHTML = `
+                    <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); padding: 16px; border-radius: var(--radius-md);">
+                        <h3 style="color: #f87171; font-size: 15px; margin-bottom: 6px;">Unable to load practice history</h3>
+                        <p style="color: var(--text-sub); font-size: 13px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ---------------- START ----------------
+        loadHistory();
+    </script>
+</body>
+</html>

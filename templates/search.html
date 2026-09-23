@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search Questions - Dhyeya</title>
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Search Questions</h1>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </header>
+    <main class="container">
+        <section class="card">
+            <h2>Search by Subject, Topic, or Keyword</h2>
+            <form id="searchForm">
+                <input type="text" name="subject" placeholder="Subject" />
+                <input type="text" name="topic" placeholder="Topic" />
+                <input type="text" name="keyword" placeholder="Keyword" />
+                <button type="submit">Search</button>
+            </form>
+        </section>
+        <section class="card">
+            <h2>Results</h2>
+            <div id="results"></div>
+        </section>
+    </main>
+ <script src="js/auth.js"></script>
+<script>
+    const token = localStorage.getItem('dhyeya_token');
+
+    if (!token) {
+        window.location.href = 'login.html';
+    }
+
+    async function searchQuestions(event) {
+        event.preventDefault();
+
+        const form = event.target;
+
+        const params = new URLSearchParams();
+
+        if (form.subject.value) {
+            params.append('subject', form.subject.value);
+        }
+
+        if (form.topic.value) {
+            params.append('topic', form.topic.value);
+        }
+
+        if (form.keyword.value) {
+            params.append('keyword', form.keyword.value);
+        }
+
+        const response = await fetch(`/api/uploads/search?${params.toString()}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            alert('Unable to search questions.');
+            return;
+        }
+
+        const results = await response.json();
+
+        const resultsDiv = document.getElementById('results');
+
+        resultsDiv.innerHTML =
+            results.length === 0
+                ? '<p>No questions found.</p>'
+                : results.map(q => `
+                    <div class="card">
+                        <h3>Question #${q.id}</h3>
+                        <p>${q.question_text}</p>
+                        <a href="question.html?id=${q.id}">
+                            View Details
+                        </a>
+                    </div>
+                `).join('');
+    }
+
+    document.getElementById('searchForm')
+        .addEventListener('submit', searchQuestions);
+</script>
+</body>
+</html>
+
+

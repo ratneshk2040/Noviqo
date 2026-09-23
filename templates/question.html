@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Question Details - Dhyeya</title>
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Question Details</h1>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </header>
+    <main class="container">
+        <section class="card" id="questionDetail"></section>
+    </main>
+<script src="js/auth.js"></script>
+<script>
+    const token = localStorage.getItem('dhyeya_token');
+
+    if (!token) {
+        window.location.href = 'login.html';
+    }
+
+    async function loadQuestion() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+
+        if (!id) {
+            document.getElementById('questionDetail').innerHTML =
+                '<p>Question id is missing.</p>';
+            return;
+        }
+
+        const response = await fetch(`/api/uploads/question/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            document.getElementById('questionDetail').innerHTML =
+                '<p>Question not found.</p>';
+            return;
+        }
+
+        const q = await response.json();
+
+        document.getElementById('questionDetail').innerHTML = `
+            <h2>Question</h2>
+            <p>${q.question_text}</p>
+
+            <h3>Explanation</h3>
+            <p>${q.explanation || 'No explanation available.'}</p>
+
+            <h3>Answer</h3>
+            <p>${q.answer || 'No answer available.'}</p>
+
+            <h3>Notes</h3>
+            <p>${q.notes || 'No notes available.'}</p>
+
+            <h3>Source</h3>
+            <p>${q.exam} | ${q.subject} | ${q.year}</p>
+
+            <button onclick="bookmarkQuestion(${q.id})">
+                Bookmark Question
+            </button>
+        `;
+    }
+
+
+    async function bookmarkQuestion(questionId) {
+        const response = await fetch(`/api/dashboard/bookmarks/${questionId}`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            alert(data.detail || 'Failed to bookmark question.');
+            return;
+        }
+
+        alert('Question bookmarked successfully.');
+    }
+
+
+    loadQuestion();
+</script>
+</body>
+</html>
+
+

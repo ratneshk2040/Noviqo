@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Practice Quiz - Noviqo</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+<header>
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="/dashboard.html" style="color: white; text-decoration: none; font-weight: bold;">← Back to Dashboard</a>
+            <h1>Practice Quiz</h1>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </header>
+    <main class="container">
+        <section class="card">
+            <h2>Generate Practice Questions</h2>
+            <form id="quizForm">
+                <input type="text" name="subject" placeholder="Subject (optional)" />
+                <input type="text" name="topic" placeholder="Topic (optional)" />
+                <input type="number" name="count" placeholder="Number of questions" min="1" value="5" />
+                <button type="submit">Create Quiz</button>
+            </form>
+        </section>
+        <section class="card" id="quizContainer"></section>
+        <section class="card">
+            <button id="submitQuizBtn" style="display:none;">Submit Quiz</button>
+            <div id="quizResults"></div>
+        </section>
+    </main>
+   <script src="/static/js/auth.js"></script>
+    <script src="/static/js/practice.js"></script>
+</body>
+</html>

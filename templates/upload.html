@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Question Paper</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Clean Header Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <h2 style="margin: 0;">Upload Question Paper 📄</h2>
+            <a href="/dashboard" style="text-decoration: none;">
+                <button type="button" class="btn" style="padding: 8px 16px; cursor: pointer;">← Back to Dashboard</button>
+            </a>
+        </div>
+        
+        <!-- Clean Vertical Form -->
+        <form id="uploadForm" onsubmit="handleUpload(event)">
+            <div>
+                <label>Course / Exam Category</label>
+                <input type="text" name="category" placeholder="CA (Chartered Accountancy)" required>
+            </div>
+            <div>
+                <label>Subject Name</label>
+                <input type="text" name="subject" placeholder="General" required>
+            </div>
+            <div>
+                <label>Exam Year</label>
+                <input type="text" name="year" placeholder="2024" required>
+            </div>
+            <div>
+                <label>Upload PDF Document</label>
+                <input type="file" name="file" accept=".pdf, .png, .jpeg, .jpg" required>
+            </div>
+            <button type="submit" id="submitBtn" class="btn" style="margin-top: 10px;">Submit & Process Paper</button>
+        </form>
+
+        <!-- Results Section -->
+        <div id="resultSection" style="margin-top: 30px; display: none;">
+            <h3>Extracted Questions & AI Explanations</h3>
+            <div id="questionsContainer"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script>
+        async function handleUpload(event) {
+            event.preventDefault();
+            const formElement = document.getElementById('uploadForm');
+            const formData = new FormData(formElement);
+            
+            const token = localStorage.getItem("dhyeya_token");
+
+            if (!token) {
+                alert('Session expired or not logged in! Please login again.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Processing with AI... Please wait';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ` + token
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const questions = await response.json();
+                    
+                    formElement.style.display = 'none';
+                    const resultSection = document.getElementById('resultSection');
+                    const container = document.getElementById('questionsContainer');
+                    resultSection.style.display = 'block';
+
+                    container.innerHTML = '';
+
+                    questions.forEach((q, index) => {
+                        const card = document.createElement('div');
+                        card.style.cssText = "background: #1e1e2f; padding: 25px; margin-bottom: 20px; border-radius: 10px; border: 1px solid #444; color: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-family: sans-serif;";
+                        
+                        card.innerHTML = `
+                            <h3 style="color: #818cf8; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 10px;">Question ${index + 1}</h3>
+                            
+                            <div style="font-size: 1.05em; line-height: 1.6; margin-bottom: 15px; white-space: pre-line;">
+                                <strong>Q:</strong> ${q.question_text || 'N/A'}
+                            </div>
+                            
+                            <div style="background: #2a2a3c; padding: 15px; border-radius: 6px; margin-top: 15px;">
+                                <p style="margin: 0 0 10px 0; color: #34d399;"><strong>💡 Explanation:</strong></p>
+                                <div style="line-height: 1.6; color: #e2e8f0; white-space: pre-line;">${q.explanation || 'N/A'}</div>
+                            </div>
+
+                            <div style="margin-top: 15px;">
+                                <p style="margin: 0; color: #fbbf24;"><strong>✅ Answer:</strong> ${q.answer || 'N/A'}</p>
+                            </div>
+                            
+                            <div style="margin-top: 10px;">
+                                <p style="margin: 0; color: #a78bfa;"><strong>📝 Short Notes:</strong> ${q.notes || 'N/A'}</p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+
+                } else {
+                    const err = await response.json();
+                    const errorMsg = typeof err.detail === 'object' ? JSON.stringify(err.detail) : (err.detail || 'Upload failed');
+                    alert('Upload failed: ' + errorMsg);
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Submit & Process Paper';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong during upload.');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Submit & Process Paper';
+            }
+        }
+    </script>
+</body>
+</html>

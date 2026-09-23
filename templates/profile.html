@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile - Noviqo</title>
+    <!-- Updated path with /static/ -->
+    <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+    <main class="container">
+        <section class="card">
+            <h2>Your Profile</h2>
+            <form id="profileForm">
+                <input type="text" id="fullName" name="full_name" placeholder="Full name" />
+                <input type="email" id="email" name="email" placeholder="Email" required />
+                <button type="submit">Update Profile</button>
+            </form>
+            <br />
+            <a href="dashboard.html" style="text-decoration: none;">
+                <button type="button">Back to Dashboard</button>
+            </a>
+            <button type="button" onclick="logout()">Logout</button>
+        </section>
+    </main>
+
+    <!-- Updated paths with /static/ -->
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script>
+        // Profile Data Fetch Function
+        async function loadProfile() {
+            try {
+                const data = await apiRequest('/api/auth/me');
+                if (data) {
+                    document.getElementById('fullName').value = data.full_name || '';
+                    document.getElementById('email').value = data.email || '';
+                }
+            } catch (err) {
+                console.error("Profile load error:", err);
+            }
+        }
+
+        // Profile Update Form Handler
+        document.getElementById('profileForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const body = {
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value
+            };
+
+            try {
+                await apiRequest('/api/auth/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify(body)
+                });
+                alert('Profile updated successfully.');
+            } catch (err) {
+                console.error("Profile update error:", err);
+            }
+        });
+
+        // Load profile on page render
+        loadProfile();
+    </script>
+</body>
+</html>

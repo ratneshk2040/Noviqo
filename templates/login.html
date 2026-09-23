@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Noviqo</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <main class="container">
+        <section class="card">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="text" name="username" placeholder="Username" required />
+                <input type="password" name="password" placeholder="Password" required />
+                <button type="submit">Login</button>
+            </form>
+            <p>New user? <a href="signup.html">Signup</a></p>
+        </section>
+    </main>
+<script src="/static/js/config.js"></script>
+<script src="/static/js/auth.js"></script>
+<script>
+    // Ye inline script override kar degi taaki login ke baad 100% Home page par hi jaye
+    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        const form = event.target;
+        const button = form.querySelector("button");
+
+        const loginData = new URLSearchParams({
+            username: form.username.value.trim(),
+            password: form.password.value
+        });
+
+        try {
+            if (button) { button.disabled = true; button.innerText = "Login..."; }
+            
+            const response = await fetch(`${apiBase}/api/auth/token`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: loginData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || "Login failed");
+            }
+
+            localStorage.setItem("dhyeya_token", data.access_token);
+            // Yahan humne explicitly Home page ka path de diya hai
+            window.location.href = "/";
+        } catch (error) {
+            console.error("Login Error:", error);
+            alert(error.message || "Server connection failed");
+        } finally {
+            if (button) { button.disabled = false; button.innerText = "Login"; }
+        }
+    }, { capture: true }); // Capture true lagane se auth.js ka purana listener override ho jayega
+</script>
+</body>
+</html>

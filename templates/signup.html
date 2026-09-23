@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - Dhyeya AI</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        body {
+            background-color: #0d0f1a;
+            color: #ffffff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-card {
+            background: #16192b;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+        }
+
+        .auth-card h2 {
+            margin: 0 0 28px 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .auth-card input {
+            width: 100%;
+            padding: 16px 20px;
+            background: #1e2238;
+            border: 1px solid #2a2f4c;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .auth-card input::placeholder {
+            color: #64748b;
+        }
+
+        .auth-card input:focus {
+            border-color: #635bff;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: #635bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background: #5248e5;
+        }
+
+        .auth-footer {
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+
+        .auth-footer a {
+            color: #635bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <h2>Signup</h2>
+
+        <form id="signupForm" onsubmit="handleSignup(event)">
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">Signup</button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="/login">Login</a>
+        </div>
+    </div>
+
+    <script src="/static/js/config.js"></script>
+    <script>
+    async function handleSignup(event) {
+        event.preventDefault();
+        const form = event.target;
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Note: Ensure your UserCreate Pydantic schema keys match these exactly
+        const payload = {
+            username: form.username.value.trim(),
+            email: form.email.value.trim(),
+            password: form.password.value
+        };
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Creating account...';
+
+        try {
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert('Account created successfully! Please login.');
+                window.location.href = '/login';
+            } else {
+                const err = await response.json().catch(() => ({}));
+                
+                // Formats Pydantic 422 validation errors properly instead of [object Object]
+                let message = 'Error creating account';
+                if (err.detail) {
+                    if (Array.isArray(err.detail)) {
+                        message = err.detail.map(e => `${e.loc[e.loc.length - 1]}: ${e.msg}`).join('\n');
+                    } else if (typeof err.detail === 'string') {
+                        message = err.detail;
+                    }
+                }
+                
+                alert('Signup failed:\n' + message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong. Please check backend connection.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Signup';
+        }
+    }
+</script>
+</body>
+</html>
