@@ -18,6 +18,7 @@
             <p>New user? <a href="signup.html">Signup</a></p>
         </section>
     </main>
+
 <script src="/static/js/config.js"></script>
 <script src="/static/js/auth.js"></script>
 <script>
@@ -35,7 +36,8 @@
         try {
             if (button) { button.disabled = true; button.innerText = "Login..."; }
             
-            const response = await fetch(`${apiBase}/api/auth/token`, {
+            // Fixed: Direct relative URL used to avoid fetch errors on production
+            const response = await fetch("/api/auth/token", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded"
@@ -50,7 +52,7 @@
             }
 
             localStorage.setItem("dhyeya_token", data.access_token);
-            // Yahan humne explicitly Home page ka path de diya hai
+            // Home page redirect
             window.location.href = "/";
         } catch (error) {
             console.error("Login Error:", error);
@@ -58,7 +60,7 @@
         } finally {
             if (button) { button.disabled = false; button.innerText = "Login"; }
         }
-    }, { capture: true }); // Capture true lagane se auth.js ka purana listener override ho jayega
+    }, { capture: true });
 </script>
 </body>
 </html>
